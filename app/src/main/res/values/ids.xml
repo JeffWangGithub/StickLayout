@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="id_nr_stickylayout_top_view" type="id"/>
+    <item name="id_nr_stickylayout_viewpage" type="id"/>
+    <item name="id_nr_stickylayout_sticky_view" type="id"/>
+
+</resources>
