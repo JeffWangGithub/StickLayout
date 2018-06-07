@@ -55,7 +55,7 @@ public class NRStickyLayout2 extends LinearLayout{
     public NRStickyLayout2(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mScroller = new Scroller(context);
-        mScrollable = new ScrollViewImp();
+        mScrollable = new ScrollableViewImp();
 
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 

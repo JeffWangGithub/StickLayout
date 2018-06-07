@@ -17,7 +17,7 @@ import android.widget.ScrollView;
  * @author: GlanWang
  * @version: Created on 18/6/5.
  */
-public class ScrollViewImp implements IScrollable {
+public class ScrollableViewImp implements IScrollable {
 
     private View mScrollView;
     @Override
@@ -41,22 +41,21 @@ public class ScrollViewImp implements IScrollable {
 
     @Override
     public boolean isTop() {
-        boolean result = false;
         View scrollableView = getScrollView();
 
         if (scrollableView instanceof AdapterView) {
-            result = isAdapterViewTop((AdapterView) scrollableView);
+            return isAdapterViewTop((AdapterView) scrollableView);
         }
         if (scrollableView instanceof ScrollView) {
-            result = isScrollViewTop((ScrollView) scrollableView);
+            return isScrollViewTop((ScrollView) scrollableView);
         }
         if (scrollableView instanceof RecyclerView) {
-            result = isRecyclerViewTop((RecyclerView) scrollableView);
+            return isRecyclerViewTop((RecyclerView) scrollableView);
         }
-//        if (scrollableView instanceof ViewGroup) {
-//            result = isViewGroupTop((ViewGroup)scrollableView);
-//        }
-        return result;
+        if (scrollableView instanceof ViewGroup) {
+            return isViewGroupTop((ViewGroup)scrollableView);
+        }
+        return false;
     }
 
     @Override
@@ -69,7 +68,7 @@ public class ScrollViewImp implements IScrollable {
         this.mScrollView = scrollView;
     }
 
-    public ScrollViewImp() {
+    public ScrollableViewImp() {
 
     }
 

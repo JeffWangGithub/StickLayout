@@ -1,4 +1,4 @@
-package activity.newsreader.netease.com.sticklayout;
+package activity.newsreader.netease.com.sticklayout.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,6 +15,8 @@ import com.zhy.base.adapter.recyclerview.CommonAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import activity.newsreader.netease.com.sticklayout.R;
 
 /**
  * @title:

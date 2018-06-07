@@ -9,6 +9,8 @@ import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.view.ViewGroup;
 
+import activity.newsreader.netease.com.sticklayout.fragment.OtherTabFragment;
+import activity.newsreader.netease.com.sticklayout.fragment.TabFragment;
 import activity.newsreader.netease.com.sticklayout.view.NRStickyLayout2;
 
 /**

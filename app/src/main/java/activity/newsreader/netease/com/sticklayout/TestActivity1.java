@@ -7,6 +7,9 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 
+import activity.newsreader.netease.com.sticklayout.fragment.OtherTabFragment;
+import activity.newsreader.netease.com.sticklayout.fragment.TabFragment;
+
 /**
  * @title: 测试 NRStickyLayout,嵌套滚动
  * @description:

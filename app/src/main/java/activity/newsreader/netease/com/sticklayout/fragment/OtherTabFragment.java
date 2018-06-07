@@ -1,4 +1,4 @@
-package activity.newsreader.netease.com.sticklayout;
+package activity.newsreader.netease.com.sticklayout.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import activity.newsreader.netease.com.sticklayout.R;
 import activity.newsreader.netease.com.sticklayout.view.NestedLinearLayout;
 
 /**
