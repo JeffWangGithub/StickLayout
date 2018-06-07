@@ -60,4 +60,8 @@ public class TabFragment extends Fragment {
             }
         });
     }
+
+    public View getScrollView() {
+        return mRecyclerView;
+    }
 }

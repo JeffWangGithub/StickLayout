@@ -1,48 +1,48 @@
 package activity.newsreader.netease.com.sticklayout;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.widget.Button;
 
-public class MainActivity extends FragmentActivity {
-    private String[] mTitles = new String[] { "简介", "评价", "Other" };
+public class MainActivity extends FragmentActivity implements View.OnClickListener {
 
-    private Fragment[] mFragments = new Fragment[mTitles.length];
 
-    private ViewPager mViewPager;
-    private FragmentPagerAdapter mAdapter;
+    private Button mBtn1, mBtn2, mBtn3;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        mViewPager = (ViewPager) findViewById(R.id.id_nr_stickylayout_viewpage);
-        initData();
+        mBtn1 = (Button) findViewById(R.id.btn1);
+        mBtn2 = (Button) findViewById(R.id.btn2);
+        mBtn3 = (Button) findViewById(R.id.btn3);
+
+        mBtn1.setOnClickListener(this);
+        mBtn2.setOnClickListener(this);
+        mBtn3.setOnClickListener(this);
+
     }
 
-    private void initData() {
-        for (int i = 0; i < mTitles.length; i++) {
-            if (i == mTitles.length - 1) {
-                mFragments[i] = Fragment.instantiate(this, OtherTabFragment.class.getName());
-            } else {
-                mFragments[i] = Fragment.instantiate(this, TabFragment.class.getName());
-            }
-        }
-        mAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
-            @Override
-            public int getCount() {
-                return mTitles.length;
-            }
 
-            @Override
-            public Fragment getItem(int position) {
-                return mFragments[position];
-            }
-        };
-        mViewPager.setAdapter(mAdapter);
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn1:
+                startActivity(new Intent(this, TestActivity1.class));
+                break;
+            case R.id.btn2:
+                startActivity(new Intent(this, TestActivity2.class));
+                break;
+            case R.id.btn3:
+                startActivity(new Intent(this, TestActivity3.class));
+                break;
+            default:
+                break;
+        }
     }
 }

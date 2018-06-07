@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <activity.newsreader.netease.com.sticklayout.view.NestedLinearLayout
+        android:id="@+id/nested_lll"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <TextView

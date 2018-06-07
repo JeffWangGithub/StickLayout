@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<activity.newsreader.netease.com.sticklayout.view.ScrollerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:text="First"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:text="Second"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:text="Thrid"/>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:text="Forth"/>
+</activity.newsreader.netease.com.sticklayout.view.ScrollerLayout>

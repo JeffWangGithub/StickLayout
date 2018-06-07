@@ -12,7 +12,7 @@ import android.view.ViewConfiguration;
 import android.widget.LinearLayout;
 
 /**
- * @title:
+ * @title: 使用嵌套滚动实现 viewpage 的 sticky layout
  * @description:
  * @company: Netease
  * @author: GlanWang

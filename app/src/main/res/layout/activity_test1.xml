@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <activity.newsreader.netease.com.sticklayout.view.NRStickyLayout
+        android:id="@+id/sticky_view_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/id_nr_stickylayout_top_view"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:background="@android:color/holo_red_dark">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:textSize="25sp"
+                android:text="Header View"/>
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/id_nr_stickylayout_sticky_view"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@android:color/holo_green_dark">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="I am Sticky View"/>
+        </RelativeLayout>
+        <android.support.v4.view.ViewPager
+            android:id="@+id/id_nr_stickylayout_viewpage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        </android.support.v4.view.ViewPager>
+
+    </activity.newsreader.netease.com.sticklayout.view.NRStickyLayout>
+</FrameLayout>

@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import activity.newsreader.netease.com.sticklayout.view.NestedLinearLayout;
+
 /**
  * @title:
  * @description:
@@ -16,6 +18,8 @@ import android.view.ViewGroup;
  */
 public class OtherTabFragment extends TabFragment {
 
+    private NestedLinearLayout mNll;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -24,6 +28,12 @@ public class OtherTabFragment extends TabFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mNll = (NestedLinearLayout) view.findViewById(R.id.nested_lll);
+    }
 
+
+    @Override
+    public View getScrollView() {
+        return mNll;
     }
 }
