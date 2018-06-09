@@ -68,12 +68,6 @@ public class ScrollableViewImp implements IScrollable {
         this.mScrollView = scrollView;
     }
 
-    public ScrollableViewImp() {
-
-    }
-
-
-
     private boolean isAdapterViewTop(AdapterView adapterView) {
         if (adapterView != null) {
             int firstVisiblePosition = adapterView.getFirstVisiblePosition();

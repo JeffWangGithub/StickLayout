@@ -162,7 +162,7 @@ public class NRStickyLayout2 extends LinearLayout{
                     scrollTo(0, currY); //移动外层布局
                 }
             } else {
-                //手势向上
+                //手势向下
                 if (mScrollable.isTop()) {
                     //到顶部
                     int dy = currY - mLastScrollerY;

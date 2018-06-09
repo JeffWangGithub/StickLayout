@@ -1,17 +1,15 @@
 package activity.newsreader.netease.com.sticklayout.view;
 
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.OverScroller;
+import android.widget.Scroller;
 
 import activity.newsreader.netease.com.sticklayout.R;
 
@@ -24,20 +22,22 @@ import activity.newsreader.netease.com.sticklayout.R;
  */
 public class NRStickyLayout extends LinearLayout {
 
+    public static final int SCROLL_UP = 1;  //向上滚动
+    public static final int SCROLL_DOWN = 2; //向下滚动
+
     private static final String TAG = "NRStickyLayout";
-    private OverScroller mScroller;
+    private Scroller mScroller;
     private View mTopView;
     private View mStickyView;
     private ViewPager mViewPager;
-    private int mTopViewHeight;
-    private int TOP_CHILD_FLING_THRESHOLD = 3;
-    private ValueAnimator mOffsetAnimator;
-    private View mCurrentScrollView;
+    private int mMaxScrollY;
+    private int mMinScrollY;
     private int mStickyViewMarginTop = 0;
     private TopViewScrollCallback mTopViewScrollCallback;
     private int mScrollY;
     private int mMaxViewPagerHeight = 0;
-
+    private IScrollable mScrollable;
+    private int mCurDirection;
 
     public NRStickyLayout(Context context) {
         this(context, null);
@@ -51,7 +51,8 @@ public class NRStickyLayout extends LinearLayout {
         super(context, attrs, defStyleAttr);
         setOrientation(LinearLayout.VERTICAL);
 
-        mScroller = new OverScroller(context);
+        mScroller = new Scroller(context);
+        mScrollable = new ScrollableViewImp();
     }
 
     @Override
@@ -86,24 +87,22 @@ public class NRStickyLayout extends LinearLayout {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        mTopViewHeight = mTopView.getMeasuredHeight() - mStickyViewMarginTop;
+        mMaxScrollY = mTopView.getMeasuredHeight() - mStickyViewMarginTop;
     }
 
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
         Log.d(TAG, "onStartNestedScroll--" + "ViewCompat.SCROLL_AXIS_VERTICAL = " + ViewCompat.SCROLL_AXIS_VERTICAL + "; nestedScrollAxes= " + nestedScrollAxes);
-        mCurrentScrollView = target;
-//        if (target instanceof CommonStateView) {
-//            return nestedScrollAxes == 0;
-//        }
         //拦截垂直滚动
-        return  (nestedScrollAxes & ViewCompat.SCROLL_AXIS_VERTICAL) != 0;
+        mScrollable.setScrollView(target);
+        return  (nestedScrollAxes & getNestedScrollAxes()) != 0;
     }
 
     @Override
     public void onNestedScrollAccepted(View child, View target, int nestedScrollAxes) {
         Log.d(TAG, "onNestedScrollAccepted--");
+
     }
 
     @Override
@@ -118,11 +117,11 @@ public class NRStickyLayout extends LinearLayout {
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        Log.d(TAG, "onNestedPreScroll");
+        Log.d(TAG, "onNestedPreScroll dy = " + dy);
         //上滑
-        boolean hiddenTop = dy > 0 && getScrollY() < mTopViewHeight;
+        boolean hiddenTop = dy > 0 && getScrollY() < mMaxScrollY;
         //下滑动，且子 view 不可滑动了
-        boolean showTop = dy < 0 && getScrollY() >= 0 && !ViewCompat.canScrollVertically(target, -1);
+        boolean showTop = dy < 0 && getScrollY() > 0 && mScrollable.isTop();
         if (hiddenTop || showTop) {
             // 滚动自己
             scrollBy(0, dy);
@@ -135,120 +134,89 @@ public class NRStickyLayout extends LinearLayout {
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
         Log.d(TAG, "onNestedPreFling");
-        mCurrentScrollView = target;
-        return false;
+        if (velocityY == 0) {
+            return false;
+        }
+        if (velocityY < 0) {
+            //手势向下
+            mCurDirection = SCROLL_DOWN;
+            if (mScrollY > 0) {
+                mScroller.fling(0, getScrollY(), (int)velocityX, (int)velocityY, 0, 0, -Integer.MAX_VALUE, Integer.MAX_VALUE);
+                invalidate();
+            } else {
+                return false;
+            }
+        } else {
+            //手势向上
+            mCurDirection = SCROLL_UP;
+            mScroller.fling(0, getScrollY(), (int)velocityX, (int)velocityY, 0, 0, -Integer.MAX_VALUE, Integer.MAX_VALUE);
+            invalidate();
+        }
+        return true;
     }
 
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
         Log.d(TAG, "onNestedFling");
-        mCurrentScrollView = target;
-        if (velocityY == 0) {
-            return true;
-        }
-        if (target instanceof RecyclerView && velocityY < 0) {
-            //target是滚动的子 view
-            RecyclerView recyclerView = (RecyclerView) target;
-            View firstChild = recyclerView.getChildAt(0);
-            int childAdapterPosition = recyclerView.getChildAdapterPosition(firstChild);
-            consumed = childAdapterPosition > TOP_CHILD_FLING_THRESHOLD;
-        }
-        if (!consumed) {
-            animateScroll(velocityY, computeDuration(0), consumed);
-        } else {
-            animateScroll(velocityY, computeDuration(velocityY), consumed);
-        }
         return true;
     }
 
     @Override
-    public int getNestedScrollAxes() {
-        return 0;
-    }
-
-
-    /**
-     * 根据速度指定动画持续的时间
-     *
-     * @param velocity
-     * @return
-     */
-    private int computeDuration(float velocity) {
-        final int distance;
-        if (velocity > 0) {
-            //向上 fling， velocity > 0
-            distance = Math.abs(mTopView.getHeight() - getScrollY());
-        } else {
-            distance = Math.abs(mTopView.getHeight() - (mTopView.getHeight() - getScrollY()));
-        }
-        final int duration;
-        velocity = Math.abs(velocity);
-        if (velocity > 0) {
-            duration = 3 * Math.round(1000 * (distance / velocity));
-        } else {
-            final float distanceRatio = (float) distance / getHeight();
-            duration = (int) ((distanceRatio + 1) * 150);
-        }
-        return duration;
-    }
-
-    private void animateScroll(float velocityY, int duration, boolean consumed) {
-        final int currentOffset = getScrollY();
-        final int topHeight = mTopView.getHeight();
-        if (mOffsetAnimator == null) {
-            mOffsetAnimator = new ValueAnimator();
-//            mOffsetAnimator.setInterpolator(mInterpolater);
-            mOffsetAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    if (animation.getAnimatedValue() instanceof Integer) {
-                        scrollTo(0, ((Integer) animation.getAnimatedValue()));
+    public void computeScroll() {
+        if (mScroller.computeScrollOffset()) {
+            final int currY = mScroller.getCurrY();
+            if (mCurDirection == SCROLL_UP) {
+                //手势向上
+                if (isSticked()) {
+                    int dy = mScroller.getFinalY() - currY;
+                    if (dy > 0) {
+                        int duration = mScroller.getDuration() - mScroller.timePassed();
+                        mScrollable.smoothScrollBy((int) mScroller.getCurrVelocity(), dy, duration);
+                        mScroller.abortAnimation();
                     }
+                    Log.d("wgc", "upup---dy" + dy);
+                } else {
+                    int dy = mScroller.getCurrY() - mScrollY;
+                    int toY = getScrollY() + dy;
+                    scrollTo(0, toY);
+                    invalidate();
                 }
-            });
-        } else {
-            mOffsetAnimator.cancel();
-        }
-        mOffsetAnimator.setDuration(Math.min(duration, 500));
-        if (velocityY >= 0) {
-            //向上滚动, 从当前偏移位置到最大高度
-            mOffsetAnimator.setIntValues(currentOffset, topHeight);
-            mOffsetAnimator.start();
-        } else {
-            //向下滚动
-            if (mCurrentScrollView instanceof RecyclerView) {
-                ((RecyclerView) mCurrentScrollView).addOnScrollListener(new RecyclerView.OnScrollListener() {
-                    @Override
-                    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                        super.onScrollStateChanged(recyclerView, newState);
-                        //监听 recyclerView 滚动  滚动到顶部且是 IDLE 状态时滚动 topView
-                        View firstChild = recyclerView.getChildAt(0);
-                        int firstChildAdapterPosition = recyclerView.getChildAdapterPosition(firstChild);
-                        if (RecyclerView.SCROLL_STATE_IDLE == newState && firstChildAdapterPosition == 0) {
-                            if (mOffsetAnimator != null) {
-                                mOffsetAnimator.setIntValues(currentOffset, 0);
-                                mOffsetAnimator.start();
-                                if (mCurrentScrollView != null) {
-                                    ((RecyclerView) mCurrentScrollView).removeOnScrollListener(this);
-                                }
-                            }
-                        }
+            } else {
+                //手势向下
+                if (mScrollable.isTop()) {
+                    int dy = currY - mScrollY;
+                    int toY = getScrollY() + dy;
+                    scrollTo(0, toY);
+                    if (mScrollY <= mMinScrollY) {
+                        mScroller.abortAnimation();
                     }
-                });
+                } else {
+                    int dy = mScroller.getFinalY() - currY;
+                    int duration = mScroller.getDuration() - mScroller.timePassed();
+                    mScrollable.smoothScrollBy(-(int) mScroller.getCurrVelocity(), dy, duration);
+                }
+                //刷新调用computeScroll() 方法,时时判断是否滚动 top 状态
+                invalidate();
             }
         }
     }
 
     @Override
+    public int getNestedScrollAxes() {
+        return ViewCompat.SCROLL_AXIS_VERTICAL;
+    }
+
+
+    @Override
     public void scrollTo(int x, int y) {
         y = y < 0 ? 0 : y;
-        y = y > mTopViewHeight ? mTopViewHeight : y;
+        y = y > mMaxScrollY ? mMaxScrollY : y;
         if (y != getScrollY()) {
             super.scrollTo(x, y);
             if (mTopViewScrollCallback != null) {
                 int scrollY = getScrollY();
-                float per = mTopViewHeight == 0 ? 0 : ((float) scrollY)/mTopViewHeight;
+                float per = mMaxScrollY == 0 ? 0 : ((float) scrollY)/ mMaxScrollY;
                 mTopViewScrollCallback.onTopViewScroll(scrollY, per);
                 Log.d(TAG, "scroolY = " + scrollY + " percent = " + per);
             }
@@ -258,7 +226,7 @@ public class NRStickyLayout extends LinearLayout {
             if (mScrollY != scrollY) {
                 mScrollY = scrollY;
                 if (mTopViewScrollCallback != null) {
-                    float per = mTopViewHeight == 0 ? 0 : ((float) scrollY)/mTopViewHeight;
+                    float per = mMaxScrollY == 0 ? 0 : ((float) scrollY)/ mMaxScrollY;
                     mTopViewScrollCallback.onTopViewScroll(mScrollY, per);
                     Log.d(TAG, "y == getScrollY" + " percent = " + per);
                 }
@@ -266,13 +234,6 @@ public class NRStickyLayout extends LinearLayout {
         }
     }
 
-    @Override
-    public void computeScroll() {
-        if (mScroller.computeScrollOffset()) {
-            scrollTo(0, mScroller.getCurrY());
-            invalidate();
-        }
-    }
 
 
     /**
@@ -294,5 +255,10 @@ public class NRStickyLayout extends LinearLayout {
 
     public interface TopViewScrollCallback {
         void onTopViewScroll(int currentScrolledY, float scrolledYPercent);
+    }
+
+
+    private boolean isSticked() {
+        return mScrollY >= mMaxScrollY;
     }
 }

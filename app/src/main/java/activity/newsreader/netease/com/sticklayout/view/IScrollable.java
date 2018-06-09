@@ -10,8 +10,6 @@ import android.view.View;
  * @version: Created on 18/6/5.
  */
 public interface IScrollable {
-
-
     /**
      * 根据速度，距离，和事件进行平滑滚动
      * @param yVelocit
@@ -29,6 +27,5 @@ public interface IScrollable {
     View getScrollView();
 
     void setScrollView(View scrollView);
-
 
 }
