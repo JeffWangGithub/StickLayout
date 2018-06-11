@@ -137,22 +137,14 @@ public class NRStickyLayout extends LinearLayout {
         if (velocityY == 0) {
             return false;
         }
-        if (velocityY < 0) {
-            //手势向下
-            mCurDirection = SCROLL_DOWN;
-            if (mScrollY > 0) {
-                mScroller.fling(0, getScrollY(), (int)velocityX, (int)velocityY, 0, 0, -Integer.MAX_VALUE, Integer.MAX_VALUE);
-                invalidate();
-            } else {
-                return false;
-            }
-        } else {
-            //手势向上
-            mCurDirection = SCROLL_UP;
-            mScroller.fling(0, getScrollY(), (int)velocityX, (int)velocityY, 0, 0, -Integer.MAX_VALUE, Integer.MAX_VALUE);
+        mCurDirection = velocityY < 0 ? SCROLL_DOWN : SCROLL_UP;
+        if (mScrollY > 0) {
+            mScroller.fling(0, getScrollY(), (int)velocityX, (int)velocityY, 0, 0,
+                    -Integer.MAX_VALUE, Integer.MAX_VALUE);
             invalidate();
+            return true;
         }
-        return true;
+        return false;
     }
 
 
@@ -192,7 +184,7 @@ public class NRStickyLayout extends LinearLayout {
                         mScroller.abortAnimation();
                     }
                 } else {
-                    int dy = mScroller.getFinalY() - currY;
+                    int dy = mScroller.getFinalY() - mScrollY;
                     int duration = mScroller.getDuration() - mScroller.timePassed();
                     mScrollable.smoothScrollBy(-(int) mScroller.getCurrVelocity(), dy, duration);
                 }
@@ -218,7 +210,7 @@ public class NRStickyLayout extends LinearLayout {
                 int scrollY = getScrollY();
                 float per = mMaxScrollY == 0 ? 0 : ((float) scrollY)/ mMaxScrollY;
                 mTopViewScrollCallback.onTopViewScroll(scrollY, per);
-                Log.d(TAG, "scroolY = " + scrollY + " percent = " + per);
+                Log.d("aaa", "scroolY = " + scrollY + " percent = " + per);
             }
             mScrollY = getScrollY();
         } else {
@@ -228,7 +220,7 @@ public class NRStickyLayout extends LinearLayout {
                 if (mTopViewScrollCallback != null) {
                     float per = mMaxScrollY == 0 ? 0 : ((float) scrollY)/ mMaxScrollY;
                     mTopViewScrollCallback.onTopViewScroll(mScrollY, per);
-                    Log.d(TAG, "y == getScrollY" + " percent = " + per);
+                    Log.d("aaa", "y == getScrollY" + " percent = " + per);
                 }
             }
         }
