@@ -6,6 +6,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -22,10 +23,13 @@ import activity.newsreader.netease.com.sticklayout.R;
  */
 public class NRStickyLayout extends LinearLayout {
 
+    private static final String TAG = "NRStickyLayout";
+
     public static final int SCROLL_UP = 1;  //向上滚动
     public static final int SCROLL_DOWN = 2; //向下滚动
 
-    private static final String TAG = "NRStickyLayout";
+    private static final int mMaxVelocity = 10000;
+
     private Scroller mScroller;
     private View mTopView;
     private View mStickyView;
@@ -38,6 +42,7 @@ public class NRStickyLayout extends LinearLayout {
     private int mMaxViewPagerHeight = 0;
     private IScrollable mScrollable;
     private int mCurDirection;
+    private boolean isPreFling = false;
 
     public NRStickyLayout(Context context) {
         this(context, null);
@@ -90,6 +95,17 @@ public class NRStickyLayout extends LinearLayout {
         mMaxScrollY = mTopView.getMeasuredHeight() - mStickyViewMarginTop;
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mScroller.abortAnimation();
+                break;
+
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
 
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
@@ -139,6 +155,7 @@ public class NRStickyLayout extends LinearLayout {
         }
         mCurDirection = velocityY < 0 ? SCROLL_DOWN : SCROLL_UP;
         if (mScrollY > 0) {
+            isPreFling = true;
             mScroller.fling(0, getScrollY(), (int)velocityX, (int)velocityY, 0, 0,
                     -Integer.MAX_VALUE, Integer.MAX_VALUE);
             invalidate();
@@ -164,8 +181,10 @@ public class NRStickyLayout extends LinearLayout {
                     int dy = mScroller.getFinalY() - currY;
                     if (dy > 0) {
                         int duration = mScroller.getDuration() - mScroller.timePassed();
-                        mScrollable.smoothScrollBy((int) mScroller.getCurrVelocity(), dy, duration);
+                        int currVelocity = (int) mScroller.getCurrVelocity();
+                        currVelocity = currVelocity > mMaxVelocity ? mMaxVelocity : currVelocity;
                         mScroller.abortAnimation();
+                        mScrollable.smoothScrollBy(currVelocity, dy, duration);
                     }
                     Log.d("wgc", "upup---dy" + dy);
                 } else {
@@ -184,9 +203,14 @@ public class NRStickyLayout extends LinearLayout {
                         mScroller.abortAnimation();
                     }
                 } else {
-                    int dy = mScroller.getFinalY() - mScrollY;
+                    int dy = mScroller.getCurrY() - mScrollY;
                     int duration = mScroller.getDuration() - mScroller.timePassed();
-                    mScrollable.smoothScrollBy(-(int) mScroller.getCurrVelocity(), dy, duration);
+                    int currVelocity = (int)mScroller.getCurrVelocity();
+                    currVelocity = currVelocity > mMaxVelocity ? mMaxVelocity : currVelocity;
+                    if (isPreFling) {
+                        mScrollable.smoothScrollBy(-currVelocity, dy, duration);
+                        isPreFling = false;
+                    }
                 }
                 //刷新调用computeScroll() 方法,时时判断是否滚动 top 状态
                 invalidate();
